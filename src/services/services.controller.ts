@@ -1,8 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Request, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
+import { ActiveSubscriptionGuard } from '../subscriptions/active-subscription.guard';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { ServicesService } from './services.service';
@@ -12,12 +17,33 @@ export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, ActiveSubscriptionGuard)
   @Roles(Role.PROVIDER)
-  create(@Body() createServiceDto: CreateServiceDto, @Request() req) {
-    console.log('Creating service for user:', req.user.id, 'Data:', createServiceDto);
-    return this.servicesService.create(createServiceDto, req.user.id);
+  @UseInterceptors(FileInterceptor('image', {
+    storage: diskStorage({
+      destination: './uploads/services',
+      filename: (req, file, callback) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const ext = extname(file.originalname);
+        callback(null, `service-${uniqueSuffix}${ext}`);
+      },
+    }),
+    fileFilter: (req, file, callback) => {
+      if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+        return callback(new Error('Only image files are allowed!'), false);
+      }
+      callback(null, true);
+    },
+  }))
+  create(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() createServiceDto: CreateServiceDto,
+    @Request() req
+  ) {
+    console.log('Creating service for user:', req.user.id, 'Data:', createServiceDto, 'File:', file);
+    return this.servicesService.create(createServiceDto, req.user.id, file?.path);
   }
+
 
   @Get()
   findAll() {

@@ -7,13 +7,14 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 export class ServicesService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createServiceDto: CreateServiceDto, providerId: number) {
+  async create(createServiceDto: CreateServiceDto, providerId: number, imagePath?: string) {
     console.log('ServiceService.create called');
     try {
       const service = await this.prisma.service.create({
         data: {
           ...createServiceDto,
           providerId,
+          imageUrl: imagePath,
         },
       });
       console.log('Service created:', service);

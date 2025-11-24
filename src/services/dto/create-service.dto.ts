@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
 
 export class CreateServiceDto {
@@ -9,10 +10,12 @@ export class CreateServiceDto {
   @IsNotEmpty()
   description: string;
 
+  @Type(() => Number)
   @IsNumber()
   @IsPositive()
   price: number;
 
+  @Type(() => Number)
   @IsNumber()
   categoryId: number;
 }

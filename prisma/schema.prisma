@@ -23,6 +23,13 @@ enum BookingStatus {
   CANCELLED
 }
 
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -41,6 +48,8 @@ model User {
   reviews   Review[]
   notifications Notification[]
   messages  Message[]
+  subscription  Subscription?
+
 
 }
 
@@ -58,6 +67,7 @@ model Service {
   price       Decimal
   providerId  Int
   categoryId  Int
+  imageUrl    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -138,4 +148,18 @@ model Message {
   sender     User     @relation(fields: [senderId], references: [id])
   booking    Booking  @relation(fields: [bookingId], references: [id])
 }
+
+model Subscription {
+  id          Int                  @id @default(autoincrement())
+  userId      Int                  @unique
+  status      SubscriptionStatus   @default(ACTIVE)
+  startDate   DateTime             @default(now())
+  endDate     DateTime
+  amount      Decimal
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  user        User                 @relation(fields: [userId], references: [id])
+}
+
 

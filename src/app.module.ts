@@ -14,7 +14,9 @@ import { PaymentsModule } from './payments/payments.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { ServicesModule } from './services/services.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { UsersModule } from './users/users.module';
+
 
 
 @Module({
@@ -35,7 +37,9 @@ import { UsersModule } from './users/users.module';
     NotificationsModule,
     CategoriesModule,
     MessagesModule,
+    SubscriptionsModule,
     ThrottlerModule.forRoot([{
+
       ttl: 60000,
       limit: 10,
     }]),
