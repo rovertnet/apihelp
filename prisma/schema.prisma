@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  PROVIDER
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(CLIENT)
+  phone     String?
+  city      String?  // Commune (e.g., Gombe, Limete)
+  bio       String?  // For providers
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  services  Service[]
+  bookings  Booking[] @relation("ClientBookings")
+  providedBookings Booking[] @relation("ProviderBookings")
+  reviews   Review[]
+  notifications Notification[]
+  messages  Message[]
+
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  icon  String?
+  services Service[]
+}
+
+model Service {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  price       Decimal
+  providerId  Int
+  categoryId  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  provider    User     @relation(fields: [providerId], references: [id])
+  category    Category @relation(fields: [categoryId], references: [id])
+  bookings    Booking[]
+  reviews     Review[]
+}
+
+model Booking {
+  id          Int      @id @default(autoincrement())
+  date        DateTime
+  status      BookingStatus @default(PENDING)
+  clientId    Int
+  providerId  Int
+  serviceId   Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  client      User     @relation("ClientBookings", fields: [clientId], references: [id])
+  provider    User     @relation("ProviderBookings", fields: [providerId], references: [id])
+  service     Service  @relation(fields: [serviceId], references: [id])
+  payment     Payment?
+  review      Review?
+  messages    Message[]
+
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model Payment {
+  id        Int           @id @default(autoincrement())
+  amount    Decimal
+  status    PaymentStatus @default(PENDING)
+  bookingId Int           @unique
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  booking   Booking       @relation(fields: [bookingId], references: [id])
+}
+
+model Review {
+  id          Int      @id @default(autoincrement())
+  rating      Int      // 1-5
+  comment     String?
+  clientId    Int
+  serviceId   Int
+  bookingId   Int      @unique
+  createdAt   DateTime @default(now())
+
+  client      User     @relation(fields: [clientId], references: [id])
+  service     Service  @relation(fields: [serviceId], references: [id])
+  booking     Booking  @relation(fields: [bookingId], references: [id])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  message   String
+  isRead    Boolean  @default(false)
+  userId    Int
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  content    String
+  senderId   Int
+  bookingId  Int
+  createdAt  DateTime @default(now())
+
+  sender     User     @relation(fields: [senderId], references: [id])
+  booking    Booking  @relation(fields: [bookingId], references: [id])
+}
+
