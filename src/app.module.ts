@@ -15,6 +15,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { ServicesModule } from './services/services.module';
 import { UsersModule } from './users/users.module';
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -32,6 +33,7 @@ import { UsersModule } from './users/users.module';
     ReviewsModule,
     NotificationsModule,
     CategoriesModule,
+    MessagesModule,
     ThrottlerModule.forRoot([{
       ttl: 60000,
       limit: 10,
