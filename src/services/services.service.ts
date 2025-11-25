@@ -40,6 +40,22 @@ export class ServicesService {
     });
   }
 
+  findByProviderId(providerId: number) {
+    return this.prisma.service.findMany({
+      where: { providerId },
+      include: {
+        provider: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        category: true,
+      },
+    });
+  }
+
   async findOne(id: number) {
     const service = await this.prisma.service.findUnique({
       where: { id },

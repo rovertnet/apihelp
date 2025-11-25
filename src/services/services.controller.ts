@@ -50,6 +50,13 @@ export class ServicesController {
     return this.servicesService.findAll();
   }
 
+  @Get('my-services')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.PROVIDER)
+  findMyServices(@Request() req) {
+    return this.servicesService.findByProviderId(req.user.id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.servicesService.findOne(+id);
