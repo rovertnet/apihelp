@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { AuthService } from './auth.service';
@@ -16,5 +16,37 @@ export class AuthController {
   @Post('register')
   async register(@Body() createUserDto: CreateUserDto) {
     return this.authService.register(createUserDto);
+  }
+
+  @Post('verify-email')
+  async verifyEmail(@Body() body: { email: string; code: string }) {
+    return this.authService.verifyEmail(body.email, body.code);
+  }
+
+  @Post('resend-verification')
+  async resendVerification(@Body() body: { email: string }) {
+    return this.authService.resendVerificationCode(body.email);
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body() body: { email: string }) {
+    return this.authService.requestPasswordReset(body.email);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() body: { token: string; password: string }) {
+    return this.authService.resetPassword(body.token, body.password);
+  }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth(@Request() req) {}
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthRedirect(@Request() req, @Res() res) {
+    const { access_token } = await this.authService.login(req.user);
+    // Redirect to frontend with token
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/callback?token=${access_token}`);
   }
 }

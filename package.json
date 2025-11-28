@@ -17,9 +17,13 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "dev:client": "cd ../frontend && npm run dev",
+    "dev:admin": "cd ../admin-frontend && npm run dev",
+    "dev:all": "concurrently \"npm run start:dev\" \"npm run dev:client\" \"npm run dev:admin\""
   },
   "dependencies": {
+    "@getbrevo/brevo": "^3.0.1",
     "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
@@ -38,6 +42,7 @@
     "helmet": "^8.1.0",
     "multer": "^2.0.2",
     "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "reflect-metadata": "^0.2.2",

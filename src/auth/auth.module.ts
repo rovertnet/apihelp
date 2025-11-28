@@ -9,9 +9,14 @@ import { JwtStrategy } from './jwt.strategy';
 
 import { LocalStrategy } from './local.strategy';
 
+import { MailModule } from '../mail/mail.module';
+
+import { GoogleStrategy } from './strategies/google.strategy';
+
 @Module({
   imports: [
     UsersModule,
+    MailModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -23,6 +28,6 @@ import { LocalStrategy } from './local.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, LocalStrategy],
+  providers: [AuthService, JwtStrategy, LocalStrategy, GoogleStrategy],
 })
 export class AuthModule {}

@@ -9,7 +9,7 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto) {
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const hashedPassword = createUserDto.password ? await bcrypt.hash(createUserDto.password, 10) : null;
     try {
       return await this.prisma.user.create({
         data: {
@@ -49,5 +49,74 @@ export class UsersService {
 
   remove(id: number) {
     return this.prisma.user.delete({ where: { id } });
+  }
+
+  // Email verification methods
+  async setVerificationCode(userId: number, code: string, expiry: Date) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        verificationCode: code,
+        verificationCodeExpiry: expiry,
+      },
+    });
+  }
+
+  async updateVerificationStatus(userId: number, verified: boolean) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        emailVerified: verified,
+        verificationCode: null,
+        verificationCodeExpiry: null,
+      },
+    });
+  }
+
+  // Password reset methods
+  async setResetPasswordToken(userId: number, token: string, expiry: Date) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        resetPasswordToken: token,
+        resetPasswordExpiry: expiry,
+      },
+    });
+  }
+
+  async clearResetPasswordToken(userId: number) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        resetPasswordToken: null,
+        resetPasswordExpiry: null,
+      },
+    });
+  }
+
+  // OAuth methods
+  findByGoogleId(googleId: string) {
+    return this.prisma.user.findUnique({ where: { googleId } });
+  }
+
+  async linkGoogleAccount(userId: number, googleId: string) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        googleId,
+        provider: 'google',
+        emailVerified: true,
+      },
+    });
+  }
+
+  // Helper for password reset
+  findByResetToken(token: string) {
+    return this.prisma.user.findFirst({
+      where: {
+        resetPasswordToken: token,
+        resetPasswordExpiry: { gt: new Date() },
+      },
+    });
   }
 }

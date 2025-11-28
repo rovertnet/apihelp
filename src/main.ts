@@ -17,7 +17,8 @@ async function bootstrap() {
   }));
   
   // Serve static files from uploads directory
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+  // When compiled, __dirname is dist/src, so we need to go up two levels to reach project root
+  app.useStaticAssets(join(__dirname, '..', '..', 'uploads'), {
     prefix: '/uploads/',
   });
   
