@@ -14,12 +14,15 @@ async function main() {
 
   if (existingAdmin) {
     console.log('Admin user already exists.');
-    // Update role just in case
+    // Update role and email verification just in case
     await prisma.user.update({
       where: { email },
-      data: { role: 'ADMIN' },
+      data: { 
+        role: 'ADMIN',
+        emailVerified: true,
+      },
     });
-    console.log('Updated existing user to ADMIN role.');
+    console.log('Updated existing user to ADMIN role with verified email.');
   } else {
     await prisma.user.create({
       data: {
@@ -28,6 +31,7 @@ async function main() {
         name: 'Super Admin',
         role: 'ADMIN',
         city: 'Kinshasa',
+        emailVerified: true,
       },
     });
     console.log(`Admin user created with email: ${email}`);

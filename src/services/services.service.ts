@@ -1,4 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { calculateDistance } from '../common/utils/distance.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
@@ -25,19 +26,42 @@ export class ServicesService {
     }
   }
 
-  findAll() {
-    return this.prisma.service.findMany({
+  async findAll(lat?: number, lng?: number) {
+    const services = await this.prisma.service.findMany({
       include: {
         provider: {
           select: {
             id: true,
             name: true,
             email: true,
+            latitude: true,
+            longitude: true,
+            address: true,
           },
         },
         category: true,
+        _count: {
+          select: { bookings: true },
+        },
       },
     });
+
+    if (lat && lng) {
+      return services.map((service: any) => {
+        let distance: number | null = null;
+        if (service.provider?.latitude && service.provider?.longitude) {
+          distance = calculateDistance(
+            lat,
+            lng,
+            service.provider.latitude,
+            service.provider.longitude,
+          );
+        }
+        return { ...service, distance };
+      });
+    }
+
+    return services;
   }
 
   findByProviderId(providerId: number) {
@@ -52,6 +76,9 @@ export class ServicesService {
           },
         },
         category: true,
+        _count: {
+          select: { bookings: true },
+        },
       },
     });
   }
@@ -68,6 +95,9 @@ export class ServicesService {
           },
         },
         category: true,
+        _count: {
+          select: { bookings: true },
+        },
       },
     });
     if (!service) {

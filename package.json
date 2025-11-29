@@ -20,7 +20,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "dev:client": "cd ../frontend && npm run dev",
     "dev:admin": "cd ../admin-frontend && npm run dev",
-    "dev:all": "concurrently \"npm run start:dev\" \"npm run dev:client\" \"npm run dev:admin\""
+    "dev:all": "concurrently \"npm run start:dev\" \"npm run dev:client\" \"npm run dev:admin\"",
+    "seed:admin": "ts-node prisma/seed-admin.ts"
   },
   "dependencies": {
     "@getbrevo/brevo": "^3.0.1",

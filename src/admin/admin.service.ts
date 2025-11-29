@@ -200,4 +200,158 @@ export class AdminService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async getAllServices(filters?: { category?: string; city?: string; search?: string }) {
+    const where: any = {};
+    
+    if (filters?.category) {
+      where.category = filters.category;
+    }
+    
+    if (filters?.city) {
+      where.city = { contains: filters.city, mode: 'insensitive' };
+    }
+    
+    if (filters?.search) {
+      where.OR = [
+        { title: { contains: filters.search, mode: 'insensitive' } },
+        { description: { contains: filters.search, mode: 'insensitive' } },
+      ];
+    }
+
+    return this.prisma.service.findMany({
+      where,
+      include: {
+        provider: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        _count: {
+          select: {
+            bookings: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  // Analytics methods for dashboard charts
+  async getBookingsTimeline() {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const bookings = await this.prisma.booking.findMany({
+      where: {
+        createdAt: {
+          gte: thirtyDaysAgo,
+        },
+      },
+      select: {
+        createdAt: true,
+        status: true,
+      },
+    });
+
+    // Group bookings by day
+    const timelineData = bookings.reduce((acc: any, booking) => {
+      const date = booking.createdAt.toISOString().split('T')[0];
+      if (!acc[date]) {
+        acc[date] = { date, count: 0, completed: 0, pending: 0, cancelled: 0 };
+      }
+      acc[date].count++;
+      if (booking.status === 'COMPLETED') acc[date].completed++;
+      if (booking.status === 'PENDING') acc[date].pending++;
+      if (booking.status === 'CANCELLED') acc[date].cancelled++;
+      return acc;
+    }, {});
+
+    return Object.values(timelineData).sort((a: any, b: any) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+  }
+
+  async getPopularServices() {
+    const services = await this.prisma.service.findMany({
+      select: {
+        id: true,
+        title: true,
+        _count: {
+          select: {
+            bookings: true,
+          },
+        },
+      },
+      orderBy: {
+        bookings: {
+          _count: 'desc',
+        },
+      },
+      take: 10,
+    });
+
+    return services.map(service => ({
+      name: service.title.length > 25 ? service.title.substring(0, 25) + '...' : service.title,
+      bookings: service._count.bookings,
+    }));
+  }
+
+  async getServicesByCategory() {
+    const services = await this.prisma.service.findMany({
+      select: {
+        category: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    const categoryCount = services.reduce((acc: any, service) => {
+      const categoryName = service.category?.name || 'Non catégorisé';
+      acc[categoryName] = (acc[categoryName] || 0) + 1;
+      return acc;
+    }, {});
+
+    return Object.entries(categoryCount).map(([name, value]) => ({
+      name,
+      value,
+    }));
+  }
+
+  async getUserRegistrations() {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const users = await this.prisma.user.findMany({
+      where: {
+        createdAt: {
+          gte: thirtyDaysAgo,
+        },
+      },
+      select: {
+        createdAt: true,
+        role: true,
+      },
+    });
+
+    // Group users by day
+    const registrationsData = users.reduce((acc: any, user) => {
+      const date = user.createdAt.toISOString().split('T')[0];
+      if (!acc[date]) {
+        acc[date] = { date, total: 0, clients: 0, providers: 0 };
+      }
+      acc[date].total++;
+      if (user.role === 'CLIENT') acc[date].clients++;
+      if (user.role === 'PROVIDER') acc[date].providers++;
+      return acc;
+    }, {});
+
+    return Object.values(registrationsData).sort((a: any, b: any) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+  }
 }

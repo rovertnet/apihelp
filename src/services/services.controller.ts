@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Request, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Request, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -40,21 +40,24 @@ export class ServicesController {
     @Body() createServiceDto: CreateServiceDto,
     @Request() req
   ) {
-    console.log('Creating service for user:', req.user.id, 'Data:', createServiceDto, 'File:', file);
-    
     // Format the image path to match the static file serving configuration
     // multer's file.path returns something like 'uploads/services/service-123.jpg'
     // which is exactly what we need since static files are served from /uploads/ prefix
     const imagePath = file?.path;
-    console.log('Image path to save:', imagePath);
     
     return this.servicesService.create(createServiceDto, req.user.id, imagePath);
   }
 
 
   @Get()
-  findAll() {
-    return this.servicesService.findAll();
+  findAll(
+    @Query('lat') lat?: string,
+    @Query('lng') lng?: string,
+  ) {
+    return this.servicesService.findAll(
+      lat ? parseFloat(lat) : undefined,
+      lng ? parseFloat(lng) : undefined,
+    );
   }
 
   @Get('my-services')

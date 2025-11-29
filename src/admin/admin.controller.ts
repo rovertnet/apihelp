@@ -10,9 +10,31 @@ import { AdminService } from './admin.service';
 export class AdminController {
   constructor(private adminService: AdminService) {}
 
+  // Dashboard and analytics endpoints
+
   @Get('stats')
   async getDashboardStats() {
     return this.adminService.getDashboardStats();
+  }
+
+  @Get('analytics/bookings-timeline')
+  async getBookingsTimeline() {
+    return this.adminService.getBookingsTimeline();
+  }
+
+  @Get('analytics/popular-services')
+  async getPopularServices() {
+    return this.adminService.getPopularServices();
+  }
+
+  @Get('analytics/services-by-category')
+  async getServicesByCategory() {
+    return this.adminService.getServicesByCategory();
+  }
+
+  @Get('analytics/user-registrations')
+  async getUserRegistrations() {
+    return this.adminService.getUserRegistrations();
   }
 
   @Get('users')
@@ -38,5 +60,14 @@ export class AdminController {
   @Get('subscriptions')
   async getAllSubscriptions(@Query('status') status?: string) {
     return this.adminService.getAllSubscriptions({ status });
+  }
+
+  @Get('services')
+  async getAllServices(
+    @Query('category') category?: string,
+    @Query('city') city?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.adminService.getAllServices({ category, city, search });
   }
 }

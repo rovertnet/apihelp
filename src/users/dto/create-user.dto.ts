@@ -26,5 +26,17 @@ export class CreateUserDto {
 
   @IsString()
   @IsOptional()
+  @IsString()
+  @IsOptional()
   bio?: string;
+
+  @IsString()
+  @IsOptional()
+  address?: string;
+
+  @IsOptional()
+  latitude?: number;
+
+  @IsOptional()
+  longitude?: number;
 }
