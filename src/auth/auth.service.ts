@@ -68,7 +68,8 @@ export class AuthService {
     }
 
     if (user.emailVerified) {
-      return { message: 'Email already verified' };
+      // Si déjà vérifié, retourner un nouveau token valide
+      return this.login(user);
     }
 
     if (user.verificationCode !== code || !user.verificationCodeExpiry || new Date() > user.verificationCodeExpiry) {
@@ -78,8 +79,11 @@ export class AuthService {
     await this.usersService.updateVerificationStatus(user.id, true);
     await this.mailService.sendWelcomeEmail(user.email, user.name);
     
-    // Auto login after verification
-    return this.login(user);
+    // Récupérer l'utilisateur mis à jour avec emailVerified: true
+    const updatedUser = await this.usersService.findByEmail(email);
+    
+    // Auto login after verification avec le nouvel état
+    return this.login(updatedUser);
   }
 
   async resendVerificationCode(email: string) {

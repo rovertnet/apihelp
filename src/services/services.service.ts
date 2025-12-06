@@ -106,14 +106,25 @@ export class ServicesService {
     return service;
   }
 
-  async update(id: number, updateServiceDto: UpdateServiceDto, providerId: number) {
+  async update(
+    id: number,
+    updateServiceDto: UpdateServiceDto,
+    providerId: number,
+    imagePath?: string
+  ) {
     const service = await this.findOne(id);
     if (service.providerId !== providerId) {
       throw new ForbiddenException('You can only update your own services');
     }
+    
+    const dataToUpdate: any = { ...updateServiceDto };
+    if (imagePath) {
+      dataToUpdate.imageUrl = imagePath;
+    }
+    
     return this.prisma.service.update({
       where: { id },
-      data: updateServiceDto,
+      data: dataToUpdate,
     });
   }
 

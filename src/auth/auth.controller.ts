@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, Request, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle } from '@nestjs/throttler';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { AuthService } from './auth.service';
 
@@ -7,6 +8,7 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 tentatives par minute
   @UseGuards(AuthGuard('local'))
   @Post('login')
   async login(@Request() req) {
@@ -23,11 +25,13 @@ export class AuthController {
     return this.authService.verifyEmail(body.email, body.code);
   }
 
+  @Throttle({ default: { limit: 3, ttl: 300000 } }) // 3 tentatives par 5 minutes
   @Post('resend-verification')
   async resendVerification(@Body() body: { email: string }) {
     return this.authService.resendVerificationCode(body.email);
   }
 
+  @Throttle({ default: { limit: 3, ttl: 3600000 } }) // 3 tentatives par heure
   @Post('forgot-password')
   async forgotPassword(@Body() body: { email: string }) {
     return this.authService.requestPasswordReset(body.email);

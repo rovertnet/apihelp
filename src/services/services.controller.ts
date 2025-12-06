@@ -75,8 +75,30 @@ export class ServicesController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.PROVIDER)
-  update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto, @Request() req) {
-    return this.servicesService.update(+id, updateServiceDto, req.user.id);
+  @UseInterceptors(FileInterceptor('image', {
+    storage: diskStorage({
+      destination: './uploads/services',
+      filename: (req, file, callback) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const ext = extname(file.originalname);
+        callback(null, `service-${uniqueSuffix}${ext}`);
+      },
+    }),
+    fileFilter: (req, file, callback) => {
+      if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+        return callback(new Error('Only image files are allowed!'), false);
+      }
+      callback(null, true);
+    },
+  }))
+  update(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() updateServiceDto: UpdateServiceDto,
+    @Request() req
+  ) {
+    const imagePath = file?.path;
+    return this.servicesService.update(+id, updateServiceDto, req.user.id, imagePath);
   }
 
   @Delete(':id')

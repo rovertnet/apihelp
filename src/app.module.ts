@@ -9,6 +9,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { CategoriesModule } from './categories/categories.module';
+import { HealthModule } from './health/health.module';
 import { MessagesModule } from './messages/messages.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PaymentsModule } from './payments/payments.module';
@@ -45,6 +46,7 @@ import { UsersModule } from './users/users.module';
       ttl: 60000,
       limit: 10,
     }]),
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [
