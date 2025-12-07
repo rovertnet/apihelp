@@ -133,4 +133,43 @@ export class UsersService {
       },
     });
   }
+
+  // Public Provider Profile
+  async findProviderPublicProfile(id: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { 
+        id,
+        role: 'PROVIDER' // Only return if it's a provider
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true, // Maybe useful for contact
+        phone: true,
+        city: true,
+        bio: true,
+        address: true,
+        latitude: true,
+        longitude: true,
+        createdAt: true,
+        role: true,
+        services: {
+          include: {
+            category: true,
+            reviews: {
+              select: {
+                rating: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    return user;
+  }
 }
