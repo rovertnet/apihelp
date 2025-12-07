@@ -1,11 +1,10 @@
-import { IsDecimal, IsISO8601, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateSubscriptionDto {
-  @IsDecimal()
-  @IsNotEmpty()
+  @IsNumber()
   amount: number;
 
-  @IsISO8601()
-  @IsNotEmpty()
-  endDate: string;
+  @IsEnum(['BASIC', 'PREMIUM'])
+  @IsOptional()
+  plan?: 'BASIC' | 'PREMIUM';
 }

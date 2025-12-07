@@ -3,6 +3,7 @@ import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
+import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { SubscriptionsService } from './subscriptions.service';
 
 @Controller('subscriptions')
@@ -12,8 +13,8 @@ export class SubscriptionsController {
 
   @Post()
   @Roles(Role.PROVIDER)
-  create(@Body() body: { amount: number }, @Request() req) {
-    return this.subscriptionsService.create(req.user.id, body.amount);
+  create(@Body() body: CreateSubscriptionDto, @Request() req) {
+    return this.subscriptionsService.create(req.user.id, body.amount, body.plan);
   }
 
   @Get('me')

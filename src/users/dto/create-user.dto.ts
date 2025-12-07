@@ -34,6 +34,22 @@ export class CreateUserDto {
   @IsOptional()
   address?: string;
 
+  @IsString()
+  @IsOptional()
+  commune?: string;
+
+  @IsString()
+  @IsOptional()
+  neighborhood?: string;
+
+  @IsString()
+  @IsOptional()
+  street?: string;
+
+  @IsString()
+  @IsOptional()
+  streetNumber?: string;
+
   @IsOptional()
   latitude?: number;
 

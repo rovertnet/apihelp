@@ -6,7 +6,15 @@ import { PrismaService } from '../prisma/prisma.service';
 export class SubscriptionsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(userId: number, amount: number) {
+  async create(userId: number, amount: number, plan: 'BASIC' | 'PREMIUM' = 'PREMIUM') {
+    // Validate amount matches plan
+    if (plan === 'BASIC' && amount !== 10) {
+      throw new BadRequestException('Basic plan costs 10$');
+    }
+    if (plan === 'PREMIUM' && amount !== 50) {
+      throw new BadRequestException('Premium plan costs 50$');
+    }
+
     // Check if user already has a subscription
     const existing = await this.prisma.subscription.findUnique({
       where: { userId },
@@ -30,6 +38,7 @@ export class SubscriptionsService {
       data: {
         userId,
         amount,
+        plan: plan === 'BASIC' ? 'BASIC' : 'PREMIUM',
         startDate,
         endDate,
         status: SubscriptionStatus.ACTIVE,

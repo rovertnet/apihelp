@@ -11,6 +11,33 @@ export class ServicesService {
   async create(createServiceDto: CreateServiceDto, providerId: number, imagePath?: string) {
     console.log('ServiceService.create called');
     try {
+      // Check subscription status
+      const subscription = await this.prisma.subscription.findUnique({
+        where: { userId: providerId },
+      });
+
+      const isSubscribed = subscription && 
+        subscription.status === 'ACTIVE' && 
+        new Date(subscription.endDate) > new Date();
+
+      if (!isSubscribed) {
+         throw new ForbiddenException(
+            'Un abonnement est requis pour publier des services. Veuillez choisir une formule (Basic ou Premium).'
+          );
+      }
+
+      if (subscription?.plan === 'BASIC') {
+        const serviceCount = await this.prisma.service.count({
+          where: { providerId },
+        });
+
+        if (serviceCount >= 3) {
+          throw new ForbiddenException(
+            'Votre forfait Basic limite à 3 services. Passez au forfait Premium pour l\'illimité.'
+          );
+        }
+      }
+
       const service = await this.prisma.service.create({
         data: {
           ...createServiceDto,

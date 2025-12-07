@@ -39,6 +39,10 @@ model User {
   phone     String?
   city      String?  // Commune (e.g., Gombe, Limete)
   address   String?  // Full address
+  commune   String?
+  neighborhood String? // Quartier
+  street    String?    // Avenue
+  streetNumber String? // Numéro de parcelle
   latitude  Float?
   longitude Float?
   bio       String?  // For providers
@@ -165,10 +169,16 @@ model Message {
   booking    Booking  @relation(fields: [bookingId], references: [id])
 }
 
+enum SubscriptionPlan {
+  BASIC
+  PREMIUM
+}
+
 model Subscription {
   id          Int                  @id @default(autoincrement())
   userId      Int                  @unique
   status      SubscriptionStatus   @default(ACTIVE)
+  plan        SubscriptionPlan     @default(PREMIUM)
   startDate   DateTime             @default(now())
   endDate     DateTime
   amount      Decimal
