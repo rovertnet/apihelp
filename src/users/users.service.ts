@@ -136,7 +136,7 @@ export class UsersService {
 
   // Public Provider Profile
   async findProviderPublicProfile(id: number) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findFirst({
       where: { 
         id,
         role: 'PROVIDER' // Only return if it's a provider
